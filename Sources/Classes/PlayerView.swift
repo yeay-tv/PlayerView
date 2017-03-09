@@ -150,7 +150,9 @@ open class PlayerView: UIView {
                 return
             }
             let newTime = CMTimeMakeWithSeconds(newValue, timescale)
-            player!.seek(to: newTime,toleranceBefore: CMTime.zero,toleranceAfter: CMTime.zero)
+            if !CMTIME_IS_INVALID(newTime) {
+                player!.seek(to: newTime, toleranceBefore: CMTime.zero, toleranceAfter: CMTime.zero)
+            }
         }
     }
     open var interval = CMTimeMake(1, 60) {
