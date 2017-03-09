@@ -24,33 +24,33 @@ public typealias PVPlayer = AVQueuePlayer
 public typealias PVPlayerItem = AVPlayerItem
 
 public protocol PlayerViewDelegate: class {
-    func playerVideo(player: PlayerView, statusPlayer: PVStatus, error: Error?)
-    func playerVideo(player: PlayerView, statusItemPlayer: PVItemStatus, error: Error?)
-    func playerVideo(player: PlayerView, loadedTimeRanges: [PVTimeRange])
-    func playerVideo(player: PlayerView, duration: Double)
-    func playerVideo(player: PlayerView, currentTime: Double)
-    func playerVideo(player: PlayerView, rate: Float)
+    func playerVideo(_ player: PlayerView, statusPlayer: PVStatus, error: Error?)
+    func playerVideo(_ player: PlayerView, statusItemPlayer: PVItemStatus, error: Error?)
+    func playerVideo(_ player: PlayerView, loadedTimeRanges: [PVTimeRange])
+    func playerVideo(_ player: PlayerView, duration: Double)
+    func playerVideo(_ player: PlayerView, currentTime: Double)
+    func playerVideo(_ player: PlayerView, rate: Float)
     func playerVideo(playerFinished player: PlayerView)
 }
 
 public extension PlayerViewDelegate {
     
-    func playerVideo(player: PlayerView, statusPlayer: PVStatus, error: Error?) {
+    func playerVideo(_ player: PlayerView, statusPlayer: PVStatus, error: Error?) {
         
     }
-    func playerVideo(player: PlayerView, statusItemPlayer: PVStatus, error: Error?) {
+    func playerVideo(_ player: PlayerView, statusItemPlayer: PVStatus, error: Error?) {
         
     }
-    func playerVideo(player: PlayerView, loadedTimeRanges: [PVTimeRange]) {
+    func playerVideo(_ player: PlayerView, loadedTimeRanges: [PVTimeRange]) {
         
     }
-    func playerVideo(player: PlayerView, duration: Double) {
+    func playerVideo(_ player: PlayerView, duration: Double) {
         
     }
-    func playerVideo(player: PlayerView, currentTime: Double) {
+    func playerVideo(_ player: PlayerView, currentTime: Double) {
         
     }
-    func playerVideo(player: PlayerView, rate: Float) {
+    func playerVideo(_ player: PlayerView, rate: Float) {
         
     }
     func playerVideo(playerFinished player: PlayerView) {
@@ -94,7 +94,7 @@ private extension CMTime {
     static var zero:CMTime { return kCMTimeZero }
 }
 /// A simple `UIView` subclass that is backed by an `AVPlayerLayer` layer.
-public class PlayerView: UIView {
+open class PlayerView: UIView {
     
     
     
@@ -104,23 +104,23 @@ public class PlayerView: UIView {
         }
     }
     
-    override public class var layerClass: Swift.AnyClass {
+    override open class var layerClass: Swift.AnyClass {
         get {
             return AVPlayerLayer.self
         }
     }
     
     
-    private var timeObserverToken: AnyObject?
-    private weak var lastPlayerTimeObserve: PVPlayer?
+    fileprivate var timeObserverToken: AnyObject?
+    fileprivate weak var lastPlayerTimeObserve: PVPlayer?
     
-    private var urlsQueue: Array<URL>?
+    fileprivate var urlsQueue: Array<URL>?
     //MARK: - Public Variables
-    public weak var delegate: PlayerViewDelegate?
+    open weak var delegate: PlayerViewDelegate?
     
-    public var loopVideosQueue = false
+    open var loopVideosQueue = false
     
-    public var player: PVPlayer? {
+    open var player: PVPlayer? {
         get {
             return playerLayer.player as? PVPlayer
         }
@@ -131,14 +131,14 @@ public class PlayerView: UIView {
     }
     
     
-    public var fillMode: PlayerViewFillMode! {
+    open var fillMode: PlayerViewFillMode! {
         didSet {
             playerLayer.videoGravity = fillMode.AVLayerVideoGravity
         }
     }
     
     
-    public var currentTime: Double {
+    open var currentTime: Double {
         get {
             guard let player = player else {
                 return 0
@@ -153,7 +153,7 @@ public class PlayerView: UIView {
             player!.seek(to: newTime,toleranceBefore: CMTime.zero,toleranceAfter: CMTime.zero)
         }
     }
-    public var interval = CMTimeMake(1, 60) {
+    open var interval = CMTimeMake(1, 60) {
         didSet {
             if rate != 0 {
                 addCurrentTimeObserver()
@@ -161,7 +161,7 @@ public class PlayerView: UIView {
         }
     }
     
-    public var rate: Float {
+    open var rate: Float {
         get {
             guard let player = player else {
                 return 0
@@ -184,7 +184,7 @@ public class PlayerView: UIView {
     /**
      Add all observers for a PVPlayer
      */
-    func addObserversPlayer(avPlayer: PVPlayer) {
+    func addObserversPlayer(_ avPlayer: PVPlayer) {
         avPlayer.addObserver(self, forKeyPath: "status", options: [.new], context: &statusContext)
         avPlayer.addObserver(self, forKeyPath: "rate", options: [.new], context: &rateContext)
         avPlayer.addObserver(self, forKeyPath: "currentItem", options: [.old,.new], context: &playerItemContext)
@@ -193,7 +193,7 @@ public class PlayerView: UIView {
     /**
      Remove all observers for a PVPlayer
      */
-    func removeObserversPlayer(avPlayer: PVPlayer) {
+    func removeObserversPlayer(_ avPlayer: PVPlayer) {
         
         avPlayer.removeObserver(self, forKeyPath: "status", context: &statusContext)
         avPlayer.removeObserver(self, forKeyPath: "rate", context: &rateContext)
@@ -203,7 +203,7 @@ public class PlayerView: UIView {
             avPlayer.removeTimeObserver(timeObserverToken)
         }
     }
-    func addObserversVideoItem(playerItem: PVPlayerItem) {
+    func addObserversVideoItem(_ playerItem: PVPlayerItem) {
         playerItem.addObserver(self, forKeyPath: "loadedTimeRanges", options: [], context: &loadedContext)
         playerItem.addObserver(self, forKeyPath: "duration", options: [], context: &durationContext)
         playerItem.addObserver(self, forKeyPath: "status", options: [], context: &statusItemContext)
@@ -231,7 +231,7 @@ public class PlayerView: UIView {
         lastPlayerTimeObserve = player
         self.timeObserverToken = player?.addPeriodicTimeObserver(forInterval: interval, queue: DispatchQueue.main) { [weak self] time-> Void in
             if let mySelf = self {
-                self?.delegate?.playerVideo(player: mySelf, currentTime: mySelf.currentTime)
+                self?.delegate?.playerVideo(mySelf, currentTime: mySelf.currentTime)
             }
             } as AnyObject?
     }
@@ -242,7 +242,7 @@ public class PlayerView: UIView {
         if loopVideosQueue && player?.items().count == 1,
             let urlsQueue = urlsQueue {
             
-            self.addVideosOnQueue(urls: urlsQueue, afterItem: item)
+            self.addVideosOnQueue(urlsQueue, afterItem: item)
         }
         self.delegate?.playerVideo(playerFinished: self)
     }
@@ -274,7 +274,7 @@ public class PlayerView: UIView {
         }
         player.pause()
         
-        removeObserversPlayer(avPlayer: player)
+        removeObserversPlayer(player)
         
         if let playerItem = player.currentItem {
             removeObserversVideoItem(playerItem: playerItem)
@@ -365,13 +365,13 @@ public class PlayerView: UIView {
             let playerItem = avPlayer.currentItem!
             
             print("adding observers")
-            addObserversPlayer(avPlayer: avPlayer)
-            addObserversVideoItem(playerItem: playerItem)
+            addObserversPlayer(avPlayer)
+            addObserversVideoItem(playerItem)
             
             // Do any additional setup after loading the view, typically from a nib.
         }
     }
-    public func addVideosOnQueue(urls: [URL], afterItem: PVPlayerItem? = nil) {
+    public func addVideosOnQueue(_ urls: [URL], afterItem: PVPlayerItem? = nil) {
         //on last item on player
         let item = afterItem ?? player?.items().last
         
@@ -423,18 +423,18 @@ public class PlayerView: UIView {
     }
     // MARK: private variables for context KVO
     
-    private var statusContext = true
-    private var statusItemContext = true
-    private var loadedContext = true
-    private var durationContext = true
-    private var currentTimeContext = true
-    private var rateContext = true
-    private var playerItemContext = true
+    fileprivate var statusContext = true
+    fileprivate var statusItemContext = true
+    fileprivate var loadedContext = true
+    fileprivate var durationContext = true
+    fileprivate var currentTimeContext = true
+    fileprivate var rateContext = true
+    fileprivate var playerItemContext = true
     
     
     
     
-    public override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+    open override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         
         
         //print("CHANGE",keyPath)
@@ -447,7 +447,7 @@ public class PlayerView: UIView {
                 return
             }
             //            self.delegate?.playerVideo(self, statusPlayer: avPlayer.status, error: avPlayer.error)
-            self.delegate?.playerVideo(player: self, statusItemPlayer: avPlayer.status, error: avPlayer.error)
+            self.delegate?.playerVideo(self, statusItemPlayer: avPlayer.status, error: avPlayer.error)
             //            self.delegate?.playerVideo(player: self, statusItemPlayer: avPlayer.status, error: avPlayer.error)
             
             
@@ -460,13 +460,13 @@ public class PlayerView: UIView {
             }
             
             let values = times.map({ $0.timeRangeValue})
-            self.delegate?.playerVideo(player: self, loadedTimeRanges: values)
+            self.delegate?.playerVideo(self, loadedTimeRanges: values)
             
             
         } else if context == &durationContext{
             
             if let currentItem = player?.currentItem {
-                self.delegate?.playerVideo(player: self, duration: currentItem.duration.seconds)
+                self.delegate?.playerVideo(self, duration: currentItem.duration.seconds)
                 
             }
             
@@ -474,7 +474,7 @@ public class PlayerView: UIView {
             //status of item has changed
             if let currentItem = player?.currentItem {
                 
-                self.delegate?.playerVideo(player: self, statusItemPlayer: currentItem.status, error: currentItem.error)
+                self.delegate?.playerVideo(self, statusItemPlayer: currentItem.status, error: currentItem.error)
             }
             
         } else if context == &rateContext{
@@ -489,7 +489,7 @@ public class PlayerView: UIView {
             }
             
             //self.delegate?.playerVideo(self, rate: newRate)
-            self.delegate?.playerVideo(player: self, rate: newRate)
+            self.delegate?.playerVideo(self, rate: newRate)
             
         } else if context == &playerItemContext{
             guard let oldItem = (change?[NSKeyValueChangeKey.oldKey] as? PVPlayerItem) else{
@@ -499,7 +499,7 @@ public class PlayerView: UIView {
             guard let newItem = (change?[NSKeyValueChangeKey.newKey] as? PVPlayerItem) else{
                 return
             }
-            addObserversVideoItem(playerItem: newItem)
+            addObserversVideoItem(newItem)
         } else {
             super.observeValue(forKeyPath: keyPath, of: object, change: change , context: context)
         }

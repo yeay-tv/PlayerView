@@ -39,8 +39,8 @@ class ViewController: UIViewController {
         
         
         playerVideo.delegate = self
-        let url1 = NSURL(string: "http://techslides.com/demos/sample-videos/small.mp4")!
-        let url = NSURL(string: "http://www.sample-videos.com/video/mp4/720/big_buck_bunny_720p_30mb.mp4")!
+        let url1 = URL(string: "http://techslides.com/demos/sample-videos/small.mp4")!
+        let url = URL(string: "http://www.sample-videos.com/video/mp4/720/big_buck_bunny_720p_30mb.mp4")!
         
         //playerVideo.url = url
         
@@ -56,29 +56,29 @@ class ViewController: UIViewController {
         // Do any additional setup after loading the view, typically from a nib.
     }
     
-    @IBAction func sliderChange(sender: UISlider) {
+    @IBAction func sliderChange(_ sender: UISlider) {
         //print(sender.value)
         
         playerVideo.currentTime = Double(sender.value)
     }
     
-    @IBAction func sliderBegin(sender: AnyObject) {
+    @IBAction func sliderBegin(_ sender: AnyObject) {
         print("beginEdit")
         isEditingSlider = true
     }
     
-    @IBAction func sliderEnd(sender: AnyObject) {
+    @IBAction func sliderEnd(_ sender: AnyObject) {
         print("endEdit")
         isEditingSlider = false
     }
     
     
     
-    @IBAction func backwardTouch(sender: AnyObject) {
+    @IBAction func backwardTouch(_ sender: AnyObject) {
         playerVideo.rate = playerVideo.rate - 0.5
     }
     
-    @IBAction func playTouch(sender: AnyObject) {
+    @IBAction func playTouch(_ sender: AnyObject) {
         if playerVideo.rate == 0 {
             playerVideo.play()
         } else {
@@ -86,11 +86,11 @@ class ViewController: UIViewController {
         }
     }
     
-    @IBAction func fowardTouch(sender: AnyObject) {
+    @IBAction func fowardTouch(_ sender: AnyObject) {
         playerVideo.rate = playerVideo.rate + 0.5
     }
     
-    func changeFill(sender: AnyObject) {
+    func changeFill(_ sender: AnyObject) {
         switch playerVideo.fillMode {
         case .Some(.ResizeAspect):
                 playerVideo.fillMode = .ResizeAspectFill
@@ -117,14 +117,14 @@ class ViewController: UIViewController {
 
 extension ViewController: PlayerViewDelegate {
     
-    func playerVideo(player: PlayerView, statusPlayer: PVStatus, error: NSError?) {
+    func playerVideo(_ player: PlayerView, statusPlayer: PVStatus, error: NSError?) {
         print(statusPlayer)
     }
     
-    func playerVideo(player: PlayerView, statusItemPlayer: PVItemStatus, error: NSError?) {
+    func playerVideo(_ player: PlayerView, statusItemPlayer: PVItemStatus, error: NSError?) {
         
     }
-    func playerVideo(player: PlayerView, loadedTimeRanges: [PVTimeRange]) {
+    func playerVideo(_ player: PlayerView, loadedTimeRanges: [PVTimeRange]) {
         
         let durationTotal = loadedTimeRanges.reduce(0) { (actual, range) -> Double in
             return actual + range.end.seconds
@@ -138,20 +138,20 @@ extension ViewController: PlayerViewDelegate {
         }
         //print("progress",progress)
     }
-    func playerVideo(player: PlayerView, duration: Double) {
+    func playerVideo(_ player: PlayerView, duration: Double) {
         //print(duration.seconds)
         self.duration = Float(duration)
         slider?.maximumValue = Float(duration)
     }
     
-    func playerVideo(player: PlayerView, currentTime: Double) {
+    func playerVideo(_ player: PlayerView, currentTime: Double) {
         if !isEditingSlider {
             slider.value = Float(currentTime)
         }
         //print("curentTime",currentTime)
     }
     
-    func playerVideo(player: PlayerView, rate: Float) {
+    func playerVideo(_ player: PlayerView, rate: Float) {
         rateLabel.text = "x\(rate)"
         
         
@@ -159,7 +159,7 @@ extension ViewController: PlayerViewDelegate {
         
         let buttonImage = UIImage(named: buttonImageName)
         
-        playButton.setImage(buttonImage, forState: .Normal)
+        playButton.setImage(buttonImage, for: UIControlState())
         
         //slider.value = Float(currentTime)
         //print(currentTime.seconds)
