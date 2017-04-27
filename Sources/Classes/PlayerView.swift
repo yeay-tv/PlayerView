@@ -31,6 +31,7 @@ public protocol PlayerViewDelegate: class {
     func playerVideo(_ player: PlayerView, currentTime: Double)
     func playerVideo(_ player: PlayerView, rate: Float)
     func playerVideo(playerFinished player: PlayerView)
+    func playerVideo(_ player: PlayerView, playbackStarted: Bool)
 }
 
 public extension PlayerViewDelegate {
@@ -56,6 +57,8 @@ public extension PlayerViewDelegate {
     func playerVideo(playerFinished player: PlayerView) {
         
     }
+    
+    func playerVideo(_ player: PlayerView, playbackStarted: Bool) { }
 }
 
 public enum PlayerViewFillMode {
@@ -112,6 +115,7 @@ open class PlayerView: UIView {
     
     
     fileprivate var timeObserverToken: AnyObject?
+    fileprivate var playbackObserverToken: AnyObject?
     fileprivate weak var lastPlayerTimeObserve: PVPlayer?
     
     fileprivate var urlsQueue: Array<URL>?
@@ -204,6 +208,10 @@ open class PlayerView: UIView {
         if let timeObserverToken = timeObserverToken {
             avPlayer.removeTimeObserver(timeObserverToken)
         }
+        
+        if let playbackObserverToken = playbackObserverToken {
+            avPlayer.removeTimeObserver(playbackObserverToken)
+        }
     }
     func addObserversVideoItem(_ playerItem: PVPlayerItem) {
         playerItem.addObserver(self, forKeyPath: "loadedTimeRanges", options: [], context: &loadedContext)
@@ -225,6 +233,11 @@ open class PlayerView: UIView {
             lastPlayerTimeObserve?.removeTimeObserver(timeObserverToken)
         }
         timeObserverToken = nil
+        
+        if let playbackObserverToken = self.playbackObserverToken {
+            lastPlayerTimeObserve?.removeTimeObserver(playbackObserverToken)
+        }
+        playbackObserverToken = nil
     }
     
     func addCurrentTimeObserver() {
@@ -235,7 +248,13 @@ open class PlayerView: UIView {
             if let mySelf = self {
                 self?.delegate?.playerVideo(mySelf, currentTime: mySelf.currentTime)
             }
-            } as AnyObject?
+        } as AnyObject?
+        
+        self.playbackObserverToken = player?.addBoundaryTimeObserver(forTimes: [NSValue(time: CMTimeMake(1, 2))], queue: DispatchQueue.main, using: { [weak self] in
+            if let mySelf = self {
+                mySelf.delegate?.playerVideo(mySelf, playbackStarted: true)
+            }
+        }) as AnyObject?
     }
     
     func playerItemDidPlayToEndTime(aNotification: NSNotification) {
