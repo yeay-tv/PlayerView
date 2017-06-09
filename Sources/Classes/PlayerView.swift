@@ -32,6 +32,7 @@ public protocol PlayerViewDelegate: class {
     func playerVideo(_ player: PlayerView, rate: Float)
     func playerVideo(playerFinished player: PlayerView)
     func playerVideo(_ player: PlayerView, playbackStarted: Bool)
+    func playerVideo(_ player: PlayerView, buffering: Bool)
 }
 
 public extension PlayerViewDelegate {
@@ -59,6 +60,7 @@ public extension PlayerViewDelegate {
     }
     
     func playerVideo(_ player: PlayerView, playbackStarted: Bool) { }
+    func playerVideo(_ player: PlayerView, buffering: Bool) { }
 }
 
 public enum PlayerViewFillMode {
@@ -79,7 +81,7 @@ public enum PlayerViewFillMode {
         }
     }
     
-    var AVLayerVideoGravity:String {
+    var AVLayerVideoGravity: String {
         get {
             switch self {
             case .resizeAspect:
@@ -116,6 +118,7 @@ open class PlayerView: UIView {
     
     fileprivate var timeObserverToken: AnyObject?
     fileprivate var playbackObserverToken: AnyObject?
+    fileprivate var bufferingObserverToken: AnyObject?
     fileprivate weak var lastPlayerTimeObserve: PVPlayer?
     
     fileprivate var urlsQueue: Array<URL>?
@@ -212,11 +215,18 @@ open class PlayerView: UIView {
         if let playbackObserverToken = playbackObserverToken {
             avPlayer.removeTimeObserver(playbackObserverToken)
         }
+        
+        if let bufferingObserverToken = bufferingObserverToken {
+            avPlayer.removeTimeObserver(bufferingObserverToken)
+        }
     }
     func addObserversVideoItem(_ playerItem: PVPlayerItem) {
         playerItem.addObserver(self, forKeyPath: "loadedTimeRanges", options: [], context: &loadedContext)
         playerItem.addObserver(self, forKeyPath: "duration", options: [], context: &durationContext)
         playerItem.addObserver(self, forKeyPath: "status", options: [], context: &statusItemContext)
+        playerItem.addObserver(self, forKeyPath: "playbackBufferEmpty", options: [.new], context: &playerItemBuffer)
+        playerItem.addObserver(self, forKeyPath: "playbackLikelyToKeepUp", options: [.new], context: &playerItemLikelyUp)
+        playerItem.addObserver(self, forKeyPath: "playbackBufferFull", options: [.new], context: &playerItemBufferFull)
         NotificationCenter.default.addObserver(self, selector: .playerItemDidPlayToEndTime, name: NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: playerItem)
     }
     func removeObserversVideoItem(playerItem: PVPlayerItem) {
@@ -224,6 +234,9 @@ open class PlayerView: UIView {
         playerItem.removeObserver(self, forKeyPath: "loadedTimeRanges", context: &loadedContext)
         playerItem.removeObserver(self, forKeyPath: "duration", context: &durationContext)
         playerItem.removeObserver(self, forKeyPath: "status", context: &statusItemContext)
+        playerItem.removeObserver(self, forKeyPath: "playbackBufferEmpty", context: &playerItemBuffer)
+        playerItem.removeObserver(self, forKeyPath: "playbackLikelyToKeepUp", context: &playerItemLikelyUp)
+        playerItem.removeObserver(self, forKeyPath: "playbackBufferFull", context: &playerItemBufferFull)
         NotificationCenter.default.removeObserver(self, name: NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: playerItem)
     }
     
@@ -238,6 +251,11 @@ open class PlayerView: UIView {
             lastPlayerTimeObserve?.removeTimeObserver(playbackObserverToken)
         }
         playbackObserverToken = nil
+        
+        if let bufferingObserverToken = self.bufferingObserverToken {
+            lastPlayerTimeObserve?.removeTimeObserver(bufferingObserverToken)
+        }
+        bufferingObserverToken = nil
     }
     
     func addCurrentTimeObserver() {
@@ -248,13 +266,23 @@ open class PlayerView: UIView {
             if let mySelf = self {
                 self?.delegate?.playerVideo(mySelf, currentTime: mySelf.currentTime)
             }
-        } as AnyObject?
+            } as AnyObject?
         
         self.playbackObserverToken = player?.addBoundaryTimeObserver(forTimes: [NSValue(time: CMTimeMake(1, 2))], queue: DispatchQueue.main, using: { [weak self] in
             if let mySelf = self {
                 mySelf.delegate?.playerVideo(mySelf, playbackStarted: true)
             }
         }) as AnyObject?
+        
+        self.bufferingObserverToken = player?.addPeriodicTimeObserver(forInterval: CMTimeMake(1, 600), queue: DispatchQueue.main) { [weak self] time-> Void in
+            if let mySelf = self {
+                if mySelf.player?.currentItem?.status == .readyToPlay {
+                    if let isPlaybackLikelyToKeepUp = mySelf.player?.currentItem?.isPlaybackLikelyToKeepUp {
+                        mySelf.delegate?.playerVideo(mySelf, buffering: isPlaybackLikelyToKeepUp)
+                    }
+                }
+            }
+            } as AnyObject?
     }
     
     func playerItemDidPlayToEndTime(aNotification: NSNotification) {
@@ -412,9 +440,9 @@ open class PlayerView: UIView {
     
     
     
-//    public func addVideosOnQueue(urls: [URL], afterItem: PVPlayerItem? = nil) {
-//        return addVideosOnQueue(urls: urls,afterItem: afterItem)
-//    }
+    //    public func addVideosOnQueue(urls: [URL], afterItem: PVPlayerItem? = nil) {
+    //        return addVideosOnQueue(urls: urls,afterItem: afterItem)
+    //    }
     
     
     
@@ -451,7 +479,9 @@ open class PlayerView: UIView {
     fileprivate var currentTimeContext = true
     fileprivate var rateContext = true
     fileprivate var playerItemContext = true
-    
+    fileprivate var playerItemBuffer = true
+    fileprivate var playerItemLikelyUp = true
+    fileprivate var playerItemBufferFull = true
     
     
     
@@ -521,6 +551,12 @@ open class PlayerView: UIView {
                 return
             }
             addObserversVideoItem(newItem)
+        } else if context == &playerItemBuffer{
+            print("--- Buffering ---")
+        } else if context == &playerItemLikelyUp{
+            print("--- Likely up ---")
+        } else if context == &playerItemBufferFull {
+            print("--- Buffer Full ---")
         } else {
             super.observeValue(forKeyPath: keyPath, of: object, change: change , context: context)
         }
