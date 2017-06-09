@@ -92,12 +92,12 @@ class ViewController: UIViewController {
     
     func changeFill(_ sender: AnyObject) {
         switch playerVideo.fillMode {
-        case .Some(.ResizeAspect):
-                playerVideo.fillMode = .ResizeAspectFill
-        case .Some(.ResizeAspectFill):
-            playerVideo.fillMode = .Resize
-        case .Some(.Resize):
-            playerVideo.fillMode = .ResizeAspect
+        case .resizeAspect?:
+                playerVideo.fillMode = .resizeAspectFill
+        case .resizeAspectFill?:
+            playerVideo.fillMode = .resize
+        case .resize?:
+            playerVideo.fillMode = .resizeAspect
         default:
             break
         }
@@ -117,11 +117,11 @@ class ViewController: UIViewController {
 
 extension ViewController: PlayerViewDelegate {
     
-    func playerVideo(_ player: PlayerView, statusPlayer: PVStatus, error: NSError?) {
+    func playerVideo(_ player: PlayerView, statusPlayer: PVStatus, error: Error?) {
         print(statusPlayer)
     }
     
-    func playerVideo(_ player: PlayerView, statusItemPlayer: PVItemStatus, error: NSError?) {
+    func playerVideo(_ player: PlayerView, statusItemPlayer: PVItemStatus, error: Error?) {
         
     }
     func playerVideo(_ player: PlayerView, loadedTimeRanges: [PVTimeRange]) {
