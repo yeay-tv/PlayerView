@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "1010"
+   LastUpgradeVersion = "1020"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -14,7 +14,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "E945D30836BFCCE319F78B13D5CE1469"
+               BlueprintIdentifier = "1356714544A5A3852A45DA1532CE2D8D"
                BuildableName = "PlayerView.framework"
                BlueprintName = "PlayerView"
                ReferencedContainer = "container:Pods.xcodeproj">
@@ -45,7 +45,7 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "E945D30836BFCCE319F78B13D5CE1469"
+            BlueprintIdentifier = "1356714544A5A3852A45DA1532CE2D8D"
             BuildableName = "PlayerView.framework"
             BlueprintName = "PlayerView"
             ReferencedContainer = "container:Pods.xcodeproj">
