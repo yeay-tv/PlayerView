@@ -40,7 +40,7 @@ public extension PlayerViewDelegate {
     func playerVideo(_ player: PlayerView, statusPlayer: PVStatus, error: Error?) {
         
     }
-    func playerVideo(_ player: PlayerView, statusItemPlayer: PVStatus, error: Error?) {
+    func playerVideo(_ player: PlayerView, statusItemPlayer: PVItemStatus, error: Error?) {
         
     }
     func playerVideo(_ player: PlayerView, loadedTimeRanges: [PVTimeRange]) {
