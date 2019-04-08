@@ -494,9 +494,8 @@ open class PlayerView: UIView {
                 super.observeValue(forKeyPath: keyPath, of: object, change: change , context: context)
                 return
             }
-            //            self.delegate?.playerVideo(self, statusPlayer: avPlayer.status, error: avPlayer.error)
-            self.delegate?.playerVideo(self, statusItemPlayer: avPlayer.status, error: avPlayer.error)
-            //            self.delegate?.playerVideo(player: self, statusItemPlayer: avPlayer.status, error: avPlayer.error)
+            self.delegate?.playerVideo(self, statusPlayer: avPlayer.status, error: avPlayer.error)
+//            self.delegate?.playerVideo(self, statusItemPlayer: avPlayer.status, error: avPlayer.error)
             
             
         } else if context == &loadedContext {
