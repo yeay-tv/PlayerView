@@ -40,7 +40,7 @@ class ViewController: UIViewController {
         
         playerVideo.delegate = self
         let url1 = URL(string: "http://techslides.com/demos/sample-videos/small.mp4")!
-        let url = URL(string: "http://www.sample-videos.com/video/mp4/720/big_buck_bunny_720p_30mb.mp4")!
+//        let url = URL(string: "http://www.sample-videos.com/video/mp4/720/big_buck_bunny_720p_30mb.mp4")!
         
         //playerVideo.url = url
         
@@ -90,7 +90,7 @@ class ViewController: UIViewController {
         playerVideo.rate = playerVideo.rate + 0.5
     }
     
-    func changeFill(_ sender: AnyObject) {
+    @objc func changeFill(_ sender: AnyObject) {
         switch playerVideo.fillMode {
         case .resizeAspect?:
                 playerVideo.fillMode = .resizeAspectFill
@@ -130,7 +130,7 @@ extension ViewController: PlayerViewDelegate {
             return actual + range.end.seconds
         }
         let dur2 = Float(durationTotal)
-        let progress = dur2 / duration
+        let progress = dur2 / (duration ?? 1)
         progressBar?.progress = progress
         
         if loadedTimeRanges.count > 1 {
@@ -159,7 +159,7 @@ extension ViewController: PlayerViewDelegate {
         
         let buttonImage = UIImage(named: buttonImageName)
         
-        playButton.setImage(buttonImage, for: UIControlState())
+        playButton.setImage(buttonImage, for: UIControl.State())
         
         //slider.value = Float(currentTime)
         //print(currentTime.seconds)

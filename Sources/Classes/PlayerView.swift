@@ -14,11 +14,11 @@ private extension Selector {
 }
 
 public extension PVTimeRange{
-    static let zero = kCMTimeRangeZero
+    static let zero = CMTimeRange.zero
 }
 
-public typealias PVStatus = AVPlayerStatus
-public typealias PVItemStatus = AVPlayerItemStatus
+public typealias PVStatus = AVPlayer.Status
+public typealias PVItemStatus = AVPlayerItem.Status
 public typealias PVTimeRange = CMTimeRange
 public typealias PVPlayer = AVQueuePlayer
 public typealias PVPlayerItem = AVPlayerItem
@@ -68,36 +68,33 @@ public enum PlayerViewFillMode {
     case resizeAspectFill
     case resize
     
-    init?(videoGravity: String){
+    init?(videoGravity: AVLayerVideoGravity){
         switch videoGravity {
-        case AVLayerVideoGravityResizeAspect:
+        case .resizeAspect:
             self = .resizeAspect
-        case AVLayerVideoGravityResizeAspectFill:
+        case .resizeAspectFill:
             self = .resizeAspectFill
-        case AVLayerVideoGravityResize:
+        case .resize:
             self = .resize
         default:
             return nil
         }
     }
     
-    var AVLayerVideoGravity: String {
+    var AVLayerVideoGravity: AVLayerVideoGravity {
         get {
             switch self {
             case .resizeAspect:
-                return AVLayerVideoGravityResizeAspect
+                return .resizeAspect
             case .resizeAspectFill:
-                return AVLayerVideoGravityResizeAspectFill
+                return .resizeAspectFill
             case .resize:
-                return AVLayerVideoGravityResize
+                return .resize
             }
         }
     }
 }
 
-private extension CMTime {
-    static var zero:CMTime { return kCMTimeZero }
-}
 /// A simple `UIView` subclass that is backed by an `AVPlayerLayer` layer.
 open class PlayerView: UIView {
     
@@ -156,13 +153,13 @@ open class PlayerView: UIView {
             guard let timescale = player?.currentItem?.duration.timescale else {
                 return
             }
-            let newTime = CMTimeMakeWithSeconds(newValue, timescale)
+            let newTime = CMTimeMakeWithSeconds(newValue, preferredTimescale: timescale)
             if !CMTIME_IS_INVALID(newTime) {
                 player!.seek(to: newTime, toleranceBefore: CMTime.zero, toleranceAfter: CMTime.zero)
             }
         }
     }
-    open var interval = CMTimeMake(1, 60) {
+    open var interval = CMTimeMake(value: 1, timescale: 60) {
         didSet {
             if rate != 0 {
                 addCurrentTimeObserver()
@@ -268,13 +265,13 @@ open class PlayerView: UIView {
             }
             } as AnyObject?
         
-        self.playbackObserverToken = player?.addBoundaryTimeObserver(forTimes: [NSValue(time: CMTimeMake(1, 2))], queue: DispatchQueue.main, using: { [weak self] in
+        self.playbackObserverToken = player?.addBoundaryTimeObserver(forTimes: [NSValue(time: CMTimeMake(value: 1, timescale: 2))], queue: DispatchQueue.main, using: { [weak self] in
             if let mySelf = self {
                 mySelf.delegate?.playerVideo(mySelf, playbackStarted: true)
             }
         }) as AnyObject?
         
-        self.bufferingObserverToken = player?.addPeriodicTimeObserver(forInterval: CMTimeMake(1, 600), queue: DispatchQueue.main) { [weak self] time-> Void in
+        self.bufferingObserverToken = player?.addPeriodicTimeObserver(forInterval: CMTimeMake(value: 1, timescale: 600), queue: DispatchQueue.main) { [weak self] time-> Void in
             if let mySelf = self {
                 if mySelf.player?.currentItem?.status == .readyToPlay {
                     if let isPlaybackLikelyToKeepUp = mySelf.player?.currentItem?.isPlaybackLikelyToKeepUp {
@@ -285,7 +282,7 @@ open class PlayerView: UIView {
             } as AnyObject?
     }
     
-    func playerItemDidPlayToEndTime(aNotification: NSNotification) {
+    @objc func playerItemDidPlayToEndTime(aNotification: NSNotification) {
         //notification of player to stop
         let item = aNotification.object as! PVPlayerItem
         if loopVideosQueue && player?.items().count == 1,
@@ -355,7 +352,7 @@ open class PlayerView: UIView {
         let timeToPicture: CMTime
         if let time = time {
             
-            timeToPicture = CMTimeMakeWithSeconds(time, timescale)
+            timeToPicture = CMTimeMakeWithSeconds(time, preferredTimescale: timescale)
         } else if let time = player?.currentItem?.currentTime() {
             timeToPicture = time
         } else {
